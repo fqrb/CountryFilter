@@ -1,11 +1,13 @@
 // ==UserScript==
 // @name         Country Filter At Leaderboard
-// @namespace    http://tampermonkey.net/
+// @namespace    https://scoresaber.com/
 // @version      1.0.0
 // @description  Adds a button that lets you filter by your country to the leaderboard page
 // @author       fqrb
 // @match        https://scoresaber.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=scoresaber.com
+// @updateURL    https://github.com/fqrb/CountryFilter/raw/main/main.user.js
+// @downloadURL  https://github.com/fqrb/CountryFilter/raw/main/main.user.js
 // @grant        none
 // ==/UserScript==
 
