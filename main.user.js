@@ -19,7 +19,7 @@
 
   async function addCountryButton() {
     const filterContainer = document.querySelector(".filter-container");
-    const url = new URL(window.location.href);
+    let url = new URL(window.location.href);
 
     const country = await getUserCountry();
     if (!country) {
@@ -28,10 +28,11 @@
     }
 
     // We only want to add the button to the leaderboard page and if we are not already filtered by the user's country
-    if (
-      !url.pathname.startsWith("/leaderboard/") ||
-      url.searchParams.get("countries") === `${country}`
-    ) {
+    const isOnLeaderboard = url.pathname.startsWith("/leaderboard/");
+    const isFilteredByCountry =
+      url.searchParams.get("countries") === `${country}`;
+
+    if (!isOnLeaderboard || isFilteredByCountry) {
       console.log("Not allowed to add button here");
       return;
     }
@@ -50,7 +51,22 @@
     countryButton.innerHTML = `Filter By ${country} ${flagEmoji}`;
 
     countryButton.className = "filter country-filter svelte-1e5nn4d";
+
+    // For accessibility
+    countryButton.title = `Filter leaderboard to ${country}`;
+    countryButton.tabIndex = 0;
+    countryButton.role = "button";
+    countryButton.addEventListener("keydown", (e) => {
+      // If someone presses enter or space we also listen to that
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        countryButton.click();
+      }
+    });
+
+    // Add the on click which actually filters
     countryButton.onclick = function () {
+      url = new URL(window.location.href);
       url.searchParams.set("countries", `${country}`);
       url.searchParams.set("page", "1");
       window.location.href = url.toString();
@@ -94,13 +110,14 @@
     return String.fromCodePoint(...codePoints);
   }
 
-  // Polls every 500 ms to see if the url has changed and if so, adds the country button
-  setInterval(() => {
+  // Create a mutation observer which checks if something in the DOM tree changes.
+  const observer = new MutationObserver(() => {
     if (location.href !== lastUrl) {
       lastUrl = location.href;
       setTimeout(addCountryButton, 300); // Give DOM a moment to update
     }
-  }, 500);
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
 
   // Initial run in case you immediately navigate to a leaderboard page
   // Wait for 500 ms before adding button to ensure all the elements have been added to the DOM tree
