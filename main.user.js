@@ -15,16 +15,22 @@
   "use strict";
 
   let lastUrl = location.href;
+  let countryCode = null; // Holds the users country as a code, i.e. NL
 
-  function addCountryButton() {
+  async function addCountryButton() {
     const filterContainer = document.querySelector(".filter-container");
-
     const url = new URL(window.location.href);
 
-    // We only want to add the button to the leaderboard page and if we are not already filtered by NL
+    const country = await getUserCountry();
+    if (!country) {
+      console.log("Could not find country for filter button");
+      return;
+    }
+
+    // We only want to add the button to the leaderboard page and if we are not already filtered by the user's country
     if (
       !url.pathname.startsWith("/leaderboard/") ||
-      url.searchParams.get("countries") === "NL"
+      url.searchParams.get("countries") === `${country}`
     ) {
       console.log("Not allowed to add button here");
       return;
@@ -39,16 +45,53 @@
     const existingButton = document.querySelector(".country-filter");
     if (existingButton) return;
 
+    const flagEmoji = getFlagEmoji(country);
     const countryButton = document.createElement("div");
-    countryButton.innerHTML = "Filter By Netherlands 🇳🇱";
+    countryButton.innerHTML = `Filter By ${country} ${flagEmoji}`;
+
     countryButton.className = "filter country-filter svelte-1e5nn4d";
     countryButton.onclick = function () {
-      url.searchParams.set("countries", "NL");
+      url.searchParams.set("countries", `${country}`);
       url.searchParams.set("page", "1");
       window.location.href = url.toString();
     };
     filterContainer.appendChild(countryButton);
     console.log("Added country button!");
+  }
+
+  async function getUserCountry() {
+    // If we already have the country no need to get it again
+    if (countryCode) return countryCode;
+
+    // Every page has a navbar with your profile image, which has a link to your profile, that features your id
+    const profileLink = document.querySelector('a[href^="/u/"]');
+    if (!profileLink) return null;
+
+    const userId = profileLink.getAttribute("href").split("/u/")[1];
+    if (!userId) return null;
+
+    // Get the user's country from an API request
+    try {
+      const response = await fetch(
+        `https://scoresaber.com/api/player/${userId}/basic`
+      );
+      const data = await response.json();
+      countryCode = data.country;
+      return countryCode;
+    } catch (err) {
+      console.error("Failed to get user country:", err);
+      return null;
+    }
+  }
+
+  // Converts a country code (NL) into the emoji => 🇳🇱
+  // Credits to https://dev.to/jorik/country-code-to-flag-emoji-a21
+  function getFlagEmoji(countryCode) {
+    const codePoints = countryCode
+      .toUpperCase()
+      .split("")
+      .map((char) => 127397 + char.charCodeAt());
+    return String.fromCodePoint(...codePoints);
   }
 
   // Polls every 500 ms to see if the url has changed and if so, adds the country button
