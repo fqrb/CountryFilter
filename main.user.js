@@ -34,6 +34,8 @@
 
     if (!isOnLeaderboard || isFilteredByCountry) {
       console.log("Not allowed to add button here");
+      const existingButton = document.querySelector(".country-filter");
+      if (existingButton) existingButton.remove();
       return;
     }
 
