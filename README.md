@@ -10,6 +10,9 @@ Get Tampermonkey for [Chrome](https://chrome.google.com/webstore/detail/tampermo
 
 Once it works, whenever you load a leaderboard page that is not already filtered by NL it should automatically add a button that will filter by the Netherlands on the right side.
 
+Example:
+![Example picture of the country button next to the normal filter button](https://github.com/fqrb/CountryFilter/blob/main/docs/image.png?raw=true)
+
 # Contact
 
 fqrb (Discord)
